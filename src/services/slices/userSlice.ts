@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { loginUserApi, registerUserApi, TRegisterData } from '@api';
+import { getUserApi, loginUserApi, registerUserApi, TRegisterData } from '@api';
 import { TUser } from '@utils-types';
-import { setCookie } from '../../utils/cookie';
+import { getCookie, setCookie } from '../../utils/cookie';
 
 type State = {
   isAuthChecked: boolean;
@@ -54,6 +54,22 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const getUser = createAsyncThunk(
+  'user/getUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      if (getCookie('accessToken')) {
+        const data = await getUserApi();
+        return data.user;
+      } else {
+        return rejectWithValue('No access token');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -87,6 +103,15 @@ export const userSlice = createSlice({
         state.data = action.payload;
         state.loginUserRequest = false;
         state.isAuthenticated = true;
+        state.isAuthChecked = true;
+      })
+      .addCase(getUser.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.isAuthenticated = true;
+        state.isAuthChecked = true;
+      })
+      .addCase(getUser.rejected, (state) => {
+        state.isAuthenticated = false;
         state.isAuthChecked = true;
       });
   }
