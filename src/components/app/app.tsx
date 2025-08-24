@@ -21,17 +21,16 @@ import {
 } from '@components';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../services/store';
 import { fetchIngredients } from '../../services/slices/ingredientsSlice';
+import { useDispatch } from '../../services/store';
 
 const App = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchIngredients());
-  }, [dispatch]);
+  }, []);
 
   return (
     <div className={styles.app}>
