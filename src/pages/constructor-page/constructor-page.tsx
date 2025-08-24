@@ -8,7 +8,6 @@ import { Preloader } from '../../components/ui';
 import { FC, useEffect } from 'react';
 
 export const ConstructorPage: FC = () => {
-  /** TODO: взять переменную из стора */
   const { isLoading } = useSelector((state) => state.ingredients);
 
   return (
