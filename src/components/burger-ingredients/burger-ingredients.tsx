@@ -13,14 +13,14 @@ export const BurgerIngredients: FC = () => {
     (state: RootState) => state.ingredients
   );
 
-  const buns = items.filter((i) => i.type === 'bun');
-  const mains = items.filter((i) => i.type === 'main');
-  const sauces = items.filter((i) => i.type === 'sauce');
+  const buns = items.filter(({ type }) => type === 'bun');
+  const mains = items.filter(({ type }) => type === 'main');
+  const sauces = items.filter(({ type }) => type === 'sauce');
 
   const [currentTab, setCurrentTab] = useState<TTabMode>('bun');
-  const titleBunRef = useRef<HTMLHeadingElement>(null);
-  const titleMainRef = useRef<HTMLHeadingElement>(null);
-  const titleSaucesRef = useRef<HTMLHeadingElement>(null);
+  const titleBunRef = useRef<HTMLHeadingElement | null>(null);
+  const titleMainRef = useRef<HTMLHeadingElement | null>(null);
+  const titleSaucesRef = useRef<HTMLHeadingElement | null>(null);
 
   const [bunsRef, inViewBuns] = useInView({
     threshold: 0
@@ -54,7 +54,6 @@ export const BurgerIngredients: FC = () => {
       titleSaucesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // return null;
   if (isLoading) {
     return <p>Загрузка ингредиентов...</p>;
   }
