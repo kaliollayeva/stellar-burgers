@@ -20,15 +20,6 @@ const initialState: ConstructorState = {
   orderModalData: null
 };
 
-// thunk для оформления заказа
-export const makeOrder = createAsyncThunk(
-  'constructor/makeOrder',
-  async (ingredientIds: string[]) => {
-    const res = await orderBurgerApi(ingredientIds);
-    return res.order;
-  }
-);
-
 export const constructorSlice = createSlice({
   name: 'constructor',
   initialState,
@@ -51,19 +42,6 @@ export const constructorSlice = createSlice({
     closeOrderModal: (state) => {
       state.orderModalData = null;
     }
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(makeOrder.pending, (state) => {
-        state.orderRequest = true;
-      })
-      .addCase(makeOrder.fulfilled, (state, action) => {
-        state.orderRequest = false;
-        state.orderModalData = action.payload;
-      })
-      .addCase(makeOrder.rejected, (state) => {
-        state.orderRequest = false;
-      });
   }
 });
 
