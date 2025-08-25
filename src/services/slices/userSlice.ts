@@ -1,7 +1,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getUserApi, loginUserApi, registerUserApi, TRegisterData } from '@api';
+import {
+  getUserApi,
+  loginUserApi,
+  logoutApi,
+  registerUserApi,
+  TRegisterData,
+  updateUserApi
+} from '@api';
 import { TUser } from '@utils-types';
-import { getCookie, setCookie } from '../../utils/cookie';
+import { deleteCookie, getCookie, setCookie } from '../../utils/cookie';
 
 type State = {
   isAuthChecked: boolean;
@@ -11,6 +18,8 @@ type State = {
   registerUserError: unknown | null;
   loginUserRequest: unknown | null;
   registerUserRequest: boolean;
+  updateUserError: unknown | null;
+  updateUserRequest: boolean;
 };
 
 const initialState: State = {
@@ -20,7 +29,9 @@ const initialState: State = {
   loginUserError: null,
   registerUserError: null,
   loginUserRequest: false,
-  registerUserRequest: false
+  registerUserRequest: false,
+  updateUserError: null,
+  updateUserRequest: false
 };
 
 export const registerUser = createAsyncThunk(
@@ -70,6 +81,35 @@ export const getUser = createAsyncThunk(
   }
 );
 
+export const updateUser = createAsyncThunk(
+  'user/updateUser',
+  async (
+    { name, email, password }: Partial<TRegisterData>,
+    { rejectWithValue }
+  ) => {
+    const data = await updateUserApi({ name, email, password });
+
+    if (!data?.success) {
+      return rejectWithValue(data);
+    }
+
+    return data.user;
+  }
+);
+
+export const deleteUser = createAsyncThunk(
+  'user/deleteUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      await logoutApi();
+      localStorage.removeItem('refreshToken');
+      deleteCookie('accessToken');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -111,6 +151,23 @@ export const userSlice = createSlice({
         state.isAuthChecked = true;
       })
       .addCase(getUser.rejected, (state) => {
+        state.isAuthenticated = false;
+        state.isAuthChecked = true;
+      })
+      .addCase(updateUser.pending, (state) => {
+        state.updateUserRequest = true;
+        state.updateUserError = null;
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.updateUserRequest = false;
+        state.updateUserError = action.payload;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.updateUserRequest = false;
+      })
+      .addCase(deleteUser.fulfilled, (state) => {
+        state.data = null;
         state.isAuthenticated = false;
         state.isAuthChecked = true;
       });
