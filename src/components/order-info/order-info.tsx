@@ -16,9 +16,7 @@ export const OrderInfo: FC = () => {
   );
 
   useEffect(() => {
-    if (!data.orders.length) {
-      dispatch(fetchFeed());
-    }
+    dispatch(fetchFeed());
   }, []);
 
   /* Готовим данные для отображения */
