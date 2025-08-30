@@ -22,10 +22,7 @@ export const createOrder = createAsyncThunk(
   }
 );
 
-export const getOrders = createAsyncThunk('orders/get', async () => {
-  const res = await getOrdersApi();
-  return res;
-});
+export const getOrders = createAsyncThunk('orders/get', getOrdersApi);
 
 export const ordersSlice = createSlice({
   name: 'orders',
