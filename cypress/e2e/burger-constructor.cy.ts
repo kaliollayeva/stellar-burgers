@@ -17,6 +17,14 @@ describe('Burger constructor page', () => {
     cy.visit('http://localhost:4000');
   });
 
+  afterEach(() => {
+    cy.clearCookies();              // очищаем setCookie
+    cy.window().then((win) => {
+      win.localStorage.clear();     // очищаем localStorage
+      win.sessionStorage.clear();   // на всякий случай sessionStorage тоже
+    });
+  });
+
   it('должен отобразить ингредиенты в конструкторе', () => {
     cy.wait('@getIngredients');
     // Добавляем булку и начинку
@@ -35,17 +43,15 @@ describe('Burger constructor page', () => {
   it('Открытие и закрытие модалки ингредиента', () => {
     // Открываем
     cy.get('[data-cy=constructor-ingredient-bun-1]').click();
-    cy.get('[data-cy=modal-title]')
-    .contains('Детали ингредиента');
+    cy.get('[data-cy=modal-ingredient-name]')
+    .contains('Классическая булка');
     // Закрытие крестиком
     cy.get('[data-cy=modal-close]').click();
-    cy.get('[data-cy=modal-title]').should('not.exist');
+    cy.get('[data-cy=modal-ingredient-name]').should('not.exist');
     // Закрытие оверлеем
     cy.get('[data-cy=constructor-ingredient-bun-1]').click();
-    cy.get('[data-cy=modal-title]')
-    .contains('Детали ингредиента');
     cy.get('[data-cy=modal-overlay]').click({ force: true });
-    cy.get('[data-cy=modal-title]').should('not.exist');
+    cy.get('[data-cy=modal-ingredient-name]').should('not.exist');
   });
 
   it('Оформление заказа', () => {
