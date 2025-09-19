@@ -214,7 +214,7 @@ export const getUserApi = () =>
   });
 
 export const updateUserApi = (user: Partial<TRegisterData>) =>
-  fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+  fetchWithRefresh<TUserResponse>(`${URL}/`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
