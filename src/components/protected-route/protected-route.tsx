@@ -10,14 +10,9 @@ type Props = {
 };
 
 export const ProtectedRoute = ({ children, onlyUnAuth }: Props) => {
-  const dispatch = useDispatch();
   const isAuthChecked = useSelector((state) => state.user.isAuthChecked);
   const user = useSelector((state) => state.user.data);
   const location = useLocation();
-
-  useEffect(() => {
-    dispatch(getUser());
-  }, [dispatch]);
 
   if (!isAuthChecked) {
     return <Preloader />;
