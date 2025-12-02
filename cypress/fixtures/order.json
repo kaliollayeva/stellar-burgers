@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "name": "Ваш заказ принят",
+  "order": {
+    "_id": "66f42e3b1234567890abcd12",
+    "number": 98765,
+    "status": "done",
+    "name": "Space бургер",
+    "createdAt": "2025-09-17T12:00:00.000Z",
+    "updatedAt": "2025-09-17T12:05:00.000Z",
+    "ingredients": [
+      "60d3b41abdacab0026a733c6",
+      "60d3b41abdacab0026a733c7",
+      "60d3b41abdacab0026a733c8"
+    ],
+    "owner": "66f42e3b0987654321dcba98"
+  }
+}

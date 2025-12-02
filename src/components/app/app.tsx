@@ -23,6 +23,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { fetchIngredients } from '../../services/slices/ingredientsSlice';
 import { useDispatch } from '../../services/store';
+import { getUser } from '../../services/slices/userSlice';
 
 const App = () => {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const App = () => {
 
   useEffect(() => {
     dispatch(fetchIngredients());
+    dispatch(getUser());
   }, []);
 
   return (
