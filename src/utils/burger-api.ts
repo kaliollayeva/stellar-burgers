@@ -1,5 +1,6 @@
 import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
+import { mockIngredients } from './mocks/ingredients.mock';
 
 const URL = process.env.BURGER_API_URL;
 
@@ -57,7 +58,7 @@ export const fetchWithRefresh = async <T>(
   }
 };
 
-type TIngredientsResponse = TServerResponse<{
+export type TIngredientsResponse = TServerResponse<{
   data: TIngredient[];
 }>;
 
@@ -71,13 +72,20 @@ type TOrdersResponse = TServerResponse<{
   data: TOrder[];
 }>;
 
-export const getIngredientsApi = () =>
-  fetch(`${URL}/ingredients`)
+const USE_MOCKS = true;
+
+export const getIngredientsApi = () => {
+  if (USE_MOCKS) {
+    return Promise.resolve(mockIngredients);
+  }
+
+  return fetch(`${URL}/ingredients`)
     .then((res) => checkResponse<TIngredientsResponse>(res))
     .then((data) => {
       if (data?.success) return data.data;
       return Promise.reject(data);
     });
+};
 
 export const getFeedsApi = () =>
   fetch(`${URL}/orders/all`)
