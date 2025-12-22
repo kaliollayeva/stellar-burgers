@@ -1,8 +1,10 @@
 import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
 import { mockIngredients } from './mocks/ingredients.mock';
+import { mockRegisterUserApi } from './mocks/auth.mock';
 
 const URL = process.env.BURGER_API_URL;
+const USE_MOCKS = true;
 
 const checkResponse = <T>(res: Response): Promise<T> =>
   res.ok ? res.json() : res.json().then((err) => Promise.reject(err));
@@ -71,8 +73,6 @@ export type TFeedsResponse = TServerResponse<{
 type TOrdersResponse = TServerResponse<{
   data: TOrder[];
 }>;
-
-const USE_MOCKS = true;
 
 export const getIngredientsApi = () => {
   if (USE_MOCKS) {
@@ -145,14 +145,18 @@ export type TRegisterData = {
   password: string;
 };
 
-type TAuthResponse = TServerResponse<{
+export type TAuthResponse = TServerResponse<{
   refreshToken: string;
   accessToken: string;
   user: TUser;
 }>;
 
-export const registerUserApi = (data: TRegisterData) =>
-  fetch(`${URL}/auth/register`, {
+export const registerUserApi = (data: TRegisterData) => {
+  if (USE_MOCKS) {
+    return mockRegisterUserApi(data);
+  }
+
+  return fetch(`${URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8'
@@ -164,7 +168,7 @@ export const registerUserApi = (data: TRegisterData) =>
       if (data?.success) return data;
       return Promise.reject(data);
     });
-
+};
 export type TLoginData = {
   email: string;
   password: string;
