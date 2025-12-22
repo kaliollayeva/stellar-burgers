@@ -1,7 +1,7 @@
 import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
 import { mockIngredients } from './mocks/ingredients.mock';
-import { mockRegisterUserApi } from './mocks/auth.mock';
+import { mockRegister, mockLogin } from './mocks/auth.mock';
 
 const URL = process.env.BURGER_API_URL;
 const USE_MOCKS = true;
@@ -153,7 +153,7 @@ export type TAuthResponse = TServerResponse<{
 
 export const registerUserApi = (data: TRegisterData) => {
   if (USE_MOCKS) {
-    return mockRegisterUserApi(data);
+    return mockRegister(data.email, data.name);
   }
 
   return fetch(`${URL}/auth/register`, {
@@ -174,8 +174,12 @@ export type TLoginData = {
   password: string;
 };
 
-export const loginUserApi = (data: TLoginData) =>
-  fetch(`${URL}/auth/login`, {
+export const loginUserApi = (data: TLoginData) => {
+  if (USE_MOCKS) {
+    return Promise.resolve(mockLogin(data.email));
+  }
+
+  return fetch(`${URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8'
@@ -187,6 +191,7 @@ export const loginUserApi = (data: TLoginData) =>
       if (data?.success) return data;
       return Promise.reject(data);
     });
+};
 
 export const forgotPasswordApi = (data: { email: string }) =>
   fetch(`${URL}/password-reset`, {
