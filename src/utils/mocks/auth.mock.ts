@@ -1,7 +1,11 @@
 import { TAuthResponse } from '../burger-api';
 import { TUser } from '../types';
 
-let mockUser: TUser;
+export let mockUser: TUser | null = null;
+
+export const setMockUser = (user: TUser | null) => {
+  mockUser = user;
+};
 
 export const mockRegister = (
   email: string,
@@ -14,20 +18,24 @@ export const mockRegister = (
 
   return Promise.resolve({
     success: true,
-    accessToken: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
+    accessToken: 'mock-access-token',
     user: mockUser
   });
 };
 
-export const mockLogin = (email: string): Promise<TAuthResponse> =>
-  Promise.resolve({
+export const mockLogin = (email: string): Promise<TAuthResponse> => {
+  const user = {
+    email,
+    name: 'Mock User'
+  };
+
+  setMockUser(user);
+
+  return Promise.resolve({
     success: true,
     accessToken: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
-    user: mockUser ?? {
-      _id: 'mock-user-id',
-      email,
-      name: 'Mock User'
-    }
+    user: user
   });
+};
