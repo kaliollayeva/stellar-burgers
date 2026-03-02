@@ -1,4 +1,4 @@
-import { TOrder } from '../types';
+import type { TOrder } from '../types';
 
 let mockOrders: TOrder[] = [
   {
@@ -25,7 +25,7 @@ export const addMockOrder = (order: TOrder) => {
   mockOrders = [order, ...mockOrders];
 };
 
-export const getMockOrders = () => mockOrders;
+export const getMockOrders = () => [...mockOrders];
 
 export const getMockOrderByNumber = (number: number) =>
   mockOrders.find((o) => o.number === number);
