@@ -43,6 +43,9 @@ export const registerUser = createAsyncThunk(
       return rejectWithValue(data);
     }
 
+    setCookie('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+
     return data.user;
   }
 );

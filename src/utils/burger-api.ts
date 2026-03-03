@@ -1,7 +1,21 @@
 import { setCookie, getCookie } from './cookie';
 import { TIngredient, TOrder, TOrdersData, TUser } from './types';
+import { mockIngredients } from './mocks/ingredients.mock';
+import {
+  mockRegister,
+  mockLogin,
+  mockUser,
+  setMockUser
+} from './mocks/auth.mock';
+import {
+  mockGetFeedsApi,
+  mockOrderBurgerApi,
+  mockGetUserOrdersApi
+} from './mocks/orders.mock';
+import { getMockOrderByNumber } from './mocks/orders.store';
 
 const URL = process.env.BURGER_API_URL;
+const USE_MOCKS = true;
 
 const checkResponse = <T>(res: Response): Promise<T> =>
   res.ok ? res.json() : res.json().then((err) => Promise.reject(err));
@@ -57,7 +71,7 @@ export const fetchWithRefresh = async <T>(
   }
 };
 
-type TIngredientsResponse = TServerResponse<{
+export type TIngredientsResponse = TServerResponse<{
   data: TIngredient[];
 }>;
 
@@ -71,24 +85,36 @@ type TOrdersResponse = TServerResponse<{
   data: TOrder[];
 }>;
 
-export const getIngredientsApi = () =>
-  fetch(`${URL}/ingredients`)
+export const getIngredientsApi = () => {
+  if (USE_MOCKS) {
+    return Promise.resolve(mockIngredients);
+  }
+
+  return fetch(`${URL}/ingredients`)
     .then((res) => checkResponse<TIngredientsResponse>(res))
     .then((data) => {
       if (data?.success) return data.data;
       return Promise.reject(data);
     });
+};
 
-export const getFeedsApi = () =>
-  fetch(`${URL}/orders/all`)
+export const getFeedsApi = () => {
+  if (USE_MOCKS) {
+    return mockGetFeedsApi();
+  }
+  return fetch(`${URL}/orders/all`)
     .then((res) => checkResponse<TFeedsResponse>(res))
     .then((data) => {
       if (data?.success) return data;
       return Promise.reject(data);
     });
+};
 
-export const getOrdersApi = () =>
-  fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
+export const getOrdersApi = () => {
+  if (USE_MOCKS) {
+    return mockGetUserOrdersApi();
+  }
+  return fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
@@ -98,14 +124,19 @@ export const getOrdersApi = () =>
     if (data?.success) return data.orders;
     return Promise.reject(data);
   });
+};
 
-type TNewOrderResponse = TServerResponse<{
+export type TNewOrderResponse = TServerResponse<{
   order: TOrder;
   name: string;
 }>;
 
-export const orderBurgerApi = (data: string[]) =>
-  fetchWithRefresh<TNewOrderResponse>(`${URL}/orders`, {
+export const orderBurgerApi = (data: string[]) => {
+  if (USE_MOCKS) {
+    return mockOrderBurgerApi(data);
+  }
+
+  return fetchWithRefresh<TNewOrderResponse>(`${URL}/orders`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
@@ -118,18 +149,29 @@ export const orderBurgerApi = (data: string[]) =>
     if (data?.success) return data;
     return Promise.reject(data);
   });
+};
 
 type TOrderResponse = TServerResponse<{
   orders: TOrder[];
 }>;
 
-export const getOrderByNumberApi = (number: number) =>
-  fetch(`${URL}/orders/${number}`, {
+export const getOrderByNumberApi = (number: number) => {
+  if (USE_MOCKS) {
+    const order = getMockOrderByNumber(number);
+
+    return Promise.resolve({
+      success: true,
+      orders: order ? [order] : []
+    });
+  }
+
+  return fetch(`${URL}/orders/${number}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
     }
   }).then((res) => checkResponse<TOrderResponse>(res));
+};
 
 export type TRegisterData = {
   email: string;
@@ -137,14 +179,18 @@ export type TRegisterData = {
   password: string;
 };
 
-type TAuthResponse = TServerResponse<{
+export type TAuthResponse = TServerResponse<{
   refreshToken: string;
   accessToken: string;
   user: TUser;
 }>;
 
-export const registerUserApi = (data: TRegisterData) =>
-  fetch(`${URL}/auth/register`, {
+export const registerUserApi = (data: TRegisterData) => {
+  if (USE_MOCKS) {
+    return mockRegister(data.email, data.name);
+  }
+
+  return fetch(`${URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8'
@@ -156,14 +202,18 @@ export const registerUserApi = (data: TRegisterData) =>
       if (data?.success) return data;
       return Promise.reject(data);
     });
-
+};
 export type TLoginData = {
   email: string;
   password: string;
 };
 
-export const loginUserApi = (data: TLoginData) =>
-  fetch(`${URL}/auth/login`, {
+export const loginUserApi = (data: TLoginData) => {
+  if (USE_MOCKS) {
+    return Promise.resolve(mockLogin(data.email));
+  }
+
+  return fetch(`${URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8'
@@ -175,6 +225,7 @@ export const loginUserApi = (data: TLoginData) =>
       if (data?.success) return data;
       return Promise.reject(data);
     });
+};
 
 export const forgotPasswordApi = (data: { email: string }) =>
   fetch(`${URL}/password-reset`, {
@@ -206,15 +257,42 @@ export const resetPasswordApi = (data: { password: string; token: string }) =>
 
 type TUserResponse = TServerResponse<{ user: TUser }>;
 
-export const getUserApi = () =>
-  fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+export const getUserApi = () => {
+  if (USE_MOCKS) {
+    if (!mockUser) {
+      return Promise.reject({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
+    return Promise.resolve({
+      success: true,
+      user: mockUser
+    });
+  }
+
+  return fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
     headers: {
       authorization: getCookie('accessToken')
     } as HeadersInit
   });
+};
 
-export const updateUserApi = (user: Partial<TRegisterData>) =>
-  fetchWithRefresh<TUserResponse>(`${URL}/`, {
+export const updateUserApi = (user: Partial<TRegisterData>) => {
+  if (USE_MOCKS) {
+    const current = mockUser || { email: 'test@test.ru', name: 'Студент' };
+
+    const updatedUser = { ...current, ...user };
+
+    setMockUser(updatedUser);
+
+    return Promise.resolve({
+      success: true,
+      user: updatedUser
+    });
+  }
+  return fetchWithRefresh<TUserResponse>(`${URL}/`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
@@ -222,9 +300,16 @@ export const updateUserApi = (user: Partial<TRegisterData>) =>
     } as HeadersInit,
     body: JSON.stringify(user)
   });
+};
 
-export const logoutApi = () =>
-  fetch(`${URL}/auth/logout`, {
+export const logoutApi = () => {
+  if (USE_MOCKS) {
+    localStorage.removeItem('refreshToken');
+    setCookie('accessToken', '');
+    return Promise.resolve({ success: true });
+  }
+
+  return fetch(`${URL}/auth/logout`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8'
@@ -233,3 +318,4 @@ export const logoutApi = () =>
       token: localStorage.getItem('refreshToken')
     })
   }).then((res) => checkResponse<TServerResponse<{}>>(res));
+};
